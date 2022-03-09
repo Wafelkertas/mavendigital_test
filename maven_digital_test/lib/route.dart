@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import 'package:maven_digital_test/main.dart';
 import 'package:maven_digital_test/views/book_detail/detail_book_view.dart';
 
 import 'package:maven_digital_test/views/home/home_view.dart';
@@ -17,6 +18,8 @@ class Routes {
             builder: (_) => DetailBookView(
                   volumeId: argumentData.volumeId,
                 ));
+      case splashScreen:
+        return MaterialPageRoute(builder: (_) => SplashScreenWidget());
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
@@ -34,3 +37,4 @@ class ToBookDetailArgument {
 
 const String homeRoute = '/';
 const String detailBookRoute = 'detail_book';
+const String splashScreen = 'splashScreen';
