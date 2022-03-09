@@ -5,6 +5,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:maven_digital_test/controller/home_controller.dart';
 import 'package:maven_digital_test/objects/model/book_model.dart';
+import 'package:maven_digital_test/route.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key}) : super(key: key);
@@ -14,21 +15,38 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late TextEditingController _textEditingController;
+  final TextEditingController _textEditingController = TextEditingController();
   final HomeController _homeController = Get.find();
-  late ScrollController _scrollController;
+  late final ScrollController _scrollController =
+      ScrollController(initialScrollOffset: 0);
+  late Future<List<BookData>> _future;
+  var offsetIndex = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _scrollController = ScrollController();
-    _textEditingController = TextEditingController();
+
+    _future = _homeController.fetchAllBookInitialized();
+
     _textEditingController.addListener(() {
-      print(_textEditingController.value.text);
+      // if (_textEditingController.text.isNotEmpty) {
+      //   setState(() {
+      // offsetIndex = 0;
+      // _future = _homeController.fetchAllBooks(
+      //     _textEditingController.text, offsetIndex);
+      //   });
+      // }
     });
+
     _scrollController.addListener(() {
-      print(_scrollController.position);
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        setState(() {
+          _future = _homeController.fetchAllBooks(
+              _textEditingController.text, offsetIndex);
+        });
+      }
     });
   }
 
@@ -44,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: Text(
             "Search Books",
             textAlign: TextAlign.center,
@@ -59,9 +78,23 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.white,
               height: MediaQuery.of(context).size.height * 0.1,
               child: TextField(
+                onSubmitted: ((value) {
+                  offsetIndex = 0;
+                  setState(() {
+                    _future = _homeController.fetchAllBooks(
+                        _textEditingController.text, 0);
+                  });
+                }),
                 controller: _textEditingController,
                 style: TextStyle(fontSize: 18),
                 decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                        onPressed: () {
+                          offsetIndex = 0;
+
+                          _textEditingController.clear();
+                        },
+                        icon: Icon(Icons.highlight_off_rounded)),
                     label: Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -69,154 +102,141 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Expanded(
-                child: Stack(
-              children: [
-                Container(
+              child: Container(
                   color: Colors.white,
                   width: double.infinity,
-                  child: Obx(() => AnimationLimiter(
-                      child: _homeController.listOfBooks.isNotEmpty
-                          ? ListView.builder(
-                              controller: _scrollController,
-                              itemCount: _homeController.listOfBooks.length,
-                              itemBuilder: (context, index) {
-                                BookData data =
-                                    _homeController.listOfBooks[index];
-                                String image = data.volumeInfo
-                                            .imageLinks["thumbnail"] !=
-                                        null
-                                    ? data.volumeInfo.imageLinks["thumbnail"]!
-                                    : "";
-                                return AnimationConfiguration.staggeredList(
-                                    duration: Duration(milliseconds: 500),
-                                    position: index,
-                                    child: SlideAnimation(
-                                      verticalOffset: 50.0,
-                                      child: FadeInAnimation(
-                                          child: Padding(
-                                        padding: EdgeInsets.all(10),
-                                        child: Material(
-                                            color: Colors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(5),
-                                            child: InkWell(
-                                              onTap: () {},
-                                              child: Container(
-                                                padding: EdgeInsets.all(10),
-                                                height: 250,
-                                                child: Row(
-                                                  children: [
-                                                    Expanded(
-                                                        flex: 1,
-                                                        child: Container(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Image.network(
-                                                              image),
-                                                        )),
-                                                    Expanded(
-                                                        flex: 2,
-                                                        child: Container(
-                                                          padding:
-                                                              EdgeInsets.all(
-                                                                  10),
-                                                          alignment: Alignment
-                                                              .centerLeft,
-                                                          child: Column(
-                                                            children: [
-                                                              Text(
-                                                                data.volumeInfo
-                                                                    .title,
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .black54,
-                                                                    fontSize:
-                                                                        18),
-                                                              ),
-                                                              Container(
-                                                                padding: EdgeInsets
-                                                                    .only(
-                                                                        top: 5,
-                                                                        bottom:
-                                                                            5),
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Text(
-                                                                    data.volumeInfo
-                                                                        .authors
-                                                                        .join(
-                                                                            ", "),
-                                                                    style: TextStyle(
-                                                                        color: Color(0xFF000000).withOpacity(
-                                                                            0.5),
-                                                                        fontSize:
-                                                                            18)),
-                                                              ),
-                                                              Container(
-                                                                padding: EdgeInsets
-                                                                    .only(
-                                                                        top: 5,
-                                                                        bottom:
-                                                                            5),
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Text(
-                                                                  data.volumeInfo
-                                                                      .publisher,
-                                                                  style: TextStyle(
-                                                                      color: Color(
-                                                                              0xFF000000)
-                                                                          .withOpacity(
-                                                                              0.5),
-                                                                      fontSize:
-                                                                          16),
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                padding: EdgeInsets
-                                                                    .only(
-                                                                        top: 5,
-                                                                        bottom:
-                                                                            5),
-                                                                alignment: Alignment
-                                                                    .centerLeft,
-                                                                child: Text(data
-                                                                    .volumeInfo
-                                                                    .publishedDate),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ))
-                                                  ],
-                                                ),
-                                              ),
-                                            )),
-                                      )),
-                                    ));
-                              },
-                            )
-                          : ListView.builder(
-                              itemCount: 5,
-                              itemBuilder: (context, index) {
-                                return Container(
-                                  height: 250,
-                                  padding: EdgeInsets.all(10),
-                                  child: Center(
-                                      child: CircularProgressIndicator()),
-                                );
-                              }))),
-                ),
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: GestureDetector(onTap: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                    _textEditingController.clear();
-                  }),
-                )
-              ],
-            ))
+                  child: KeepAliveFutureBuilder(
+                    future: _future,
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                        case ConnectionState.waiting:
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height * 2,
+                            child: Align(
+                                alignment: Alignment.topCenter,
+                                child: CircularProgressIndicator()),
+                          );
+                        case ConnectionState.done:
+                          if (snapshot.hasError) {
+                            return Text(snapshot.error.toString());
+                          } else {
+                            var listOfBook = snapshot.data as List<BookData>;
+
+                            offsetIndex += listOfBook.length;
+                            return _buildPage(listOfBook);
+                          }
+                        default:
+                          return Container();
+                      }
+                    },
+                  )),
+            )
           ],
         ));
   }
+
+  Widget _buildPage(List<BookData> listOfBook) {
+    return ListView.builder(
+        itemCount: listOfBook.length,
+        controller: _scrollController,
+        itemBuilder: (context, index) {
+          // print(index);
+          return Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, detailBookRoute,
+                      arguments: ToBookDetailArgument(listOfBook[index].id));
+                },
+                child: Container(
+                  padding: EdgeInsets.all(5),
+                  height: 250,
+                  child: Row(
+                    children: [
+                      Expanded(
+                          flex: 1,
+                          child: Container(
+                            alignment: Alignment.topLeft,
+                            child: Image.network(listOfBook[index]
+                                .volumeInfo
+                                .imageLinks['thumbnail']!),
+                          )),
+                      Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            alignment: Alignment.centerLeft,
+                            child: Column(
+                              children: [
+                                Text(
+                                  listOfBook[index].volumeInfo.title,
+                                  style: TextStyle(
+                                      color: Colors.black54, fontSize: 18),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(top: 5, bottom: 5),
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      listOfBook[index]
+                                          .volumeInfo
+                                          .authors
+                                          .join(", "),
+                                      style: TextStyle(
+                                          color: Color(0xFF000000)
+                                              .withOpacity(0.5),
+                                          fontSize: 18)),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(top: 5, bottom: 5),
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    listOfBook[index].volumeInfo.publisher,
+                                    style: TextStyle(
+                                        color:
+                                            Color(0xFF000000).withOpacity(0.5),
+                                        fontSize: 16),
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(top: 5, bottom: 5),
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(listOfBook[index]
+                                      .volumeInfo
+                                      .publishedDate),
+                                ),
+                              ],
+                            ),
+                          ))
+                    ],
+                  ),
+                ),
+              ));
+        });
+  }
+}
+
+class KeepAliveFutureBuilder extends StatefulWidget {
+  final Future future;
+  final AsyncWidgetBuilder builder;
+
+  KeepAliveFutureBuilder({required this.future, required this.builder});
+
+  @override
+  _KeepAliveFutureBuilderState createState() => _KeepAliveFutureBuilderState();
+}
+
+class _KeepAliveFutureBuilderState extends State<KeepAliveFutureBuilder>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: widget.future,
+      builder: widget.builder,
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

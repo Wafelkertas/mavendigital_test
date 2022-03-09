@@ -12,8 +12,11 @@ class Routes {
       case homeRoute:
         return MaterialPageRoute(builder: (_) => MyHomePage());
       case detailBookRoute:
-        return MaterialPageRoute(builder: (_) => DetailBookView());
-
+        var argumentData = settings.arguments as ToBookDetailArgument;
+        return MaterialPageRoute(
+            builder: (_) => DetailBookView(
+                  volumeId: argumentData.volumeId,
+                ));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
@@ -22,6 +25,11 @@ class Routes {
                 ));
     }
   }
+}
+
+class ToBookDetailArgument {
+  String volumeId;
+  ToBookDetailArgument(this.volumeId);
 }
 
 const String homeRoute = '/';
