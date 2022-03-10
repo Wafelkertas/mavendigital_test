@@ -1,17 +1,18 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'package:maven_digital_test/main.dart';
 import 'package:maven_digital_test/views/book_detail/detail_book_view.dart';
 
 import 'package:maven_digital_test/views/home/home_view.dart';
+import 'package:maven_digital_test/views/settings/settings_view.dart';
+import 'package:maven_digital_test/views/splash_screen/splash_screen_view.dart';
 
 // Ini merupakan route navigation
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case homeRoute:
-        return MaterialPageRoute(builder: (_) => MyHomePage());
+        return MaterialPageRoute(builder: (_) => HomeView());
       case detailBookRoute:
         var argumentData = settings.arguments as ToBookDetailArgument;
         return MaterialPageRoute(
@@ -19,7 +20,9 @@ class Routes {
                   volumeId: argumentData.volumeId,
                 ));
       case splashScreen:
-        return MaterialPageRoute(builder: (_) => SplashScreenWidget());
+        return MaterialPageRoute(builder: (_) => SplashScreenView());
+      case settingsScreen:
+        return MaterialPageRoute(builder: (_) => SettingsView());
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
@@ -38,3 +41,4 @@ class ToBookDetailArgument {
 const String homeRoute = '/';
 const String detailBookRoute = 'detail_book';
 const String splashScreen = 'splashScreen';
+const String settingsScreen = 'settingsScreen';

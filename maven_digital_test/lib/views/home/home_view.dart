@@ -1,20 +1,21 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:maven_digital_test/controller/home_controller.dart';
 import 'package:maven_digital_test/objects/model/book_model.dart';
 import 'package:maven_digital_test/route.dart';
+import 'package:maven_digital_test/utils/constant.dart';
+import 'package:maven_digital_test/views/settings/settings_view.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key}) : super(key: key);
+class HomeView extends StatefulWidget {
+  HomeView({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomeView> createState() => _HomeViewState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeViewState extends State<HomeView> {
   final TextEditingController _textEditingController = TextEditingController();
   final HomeController _homeController = Get.find();
   late final ScrollController _scrollController =
@@ -29,22 +30,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _future = _homeController.fetchAllBookInitialized();
 
-    _textEditingController.addListener(() {
-      // if (_textEditingController.text.isNotEmpty) {
-      //   setState(() {
-      // offsetIndex = 0;
-      // _future = _homeController.fetchAllBooks(
-      //     _textEditingController.text, offsetIndex);
-      //   });
-      // }
-    });
-
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
         setState(() {
           _future = _homeController.fetchAllBooks(
-              _textEditingController.text, offsetIndex);
+              _textEditingController.text.isEmpty
+                  ? DEFAULT_KEYWORDS
+                  : _textEditingController.text,
+              offsetIndex);
         });
       }
     });
@@ -70,6 +64,14 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           backgroundColor: Colors.white,
           elevation: 0,
+          actions: [
+            IconButton(
+                onPressed: () => Navigator.pushNamed(context, settingsScreen),
+                icon: Icon(
+                  Icons.settings,
+                  color: Colors.black54,
+                ))
+          ],
         ),
         body: Column(
           children: [
@@ -91,7 +93,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     suffixIcon: IconButton(
                         onPressed: () {
                           offsetIndex = 0;
-
+                          setState(() {
+                            _future = _homeController.fetchAllBookInitialized();
+                          });
                           _textEditingController.clear();
                         },
                         icon: Icon(Icons.highlight_off_rounded)),
@@ -112,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         case ConnectionState.none:
                         case ConnectionState.waiting:
                           return SizedBox(
-                            height: MediaQuery.of(context).size.height * 2,
+                            height: MediaQuery.of(context).size.height * 4,
                             child: Align(
                                 alignment: Alignment.topCenter,
                                 child: CircularProgressIndicator()),
@@ -160,8 +164,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Container(
                             alignment: Alignment.topLeft,
                             child: Image.network(listOfBook[index]
-                                .volumeInfo
-                                .imageLinks['thumbnail']!),
+                                    .volumeInfo
+                                    .imageLinks['thumbnail'] ??
+                                ""),
                           )),
                       Expanded(
                           flex: 2,
@@ -217,6 +222,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+// Future builder dengan AutomaticKeepAliveClientMixin agar
+// tidak terjadi rebuild saat data sudah ada di state
 class KeepAliveFutureBuilder extends StatefulWidget {
   final Future future;
   final AsyncWidgetBuilder builder;

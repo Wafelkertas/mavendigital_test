@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:maven_digital_test/objects/model/book_model.dart';
 import 'package:maven_digital_test/objects/model/single_book_model.dart';
 
 import 'package:maven_digital_test/repository/book_repository.dart';
+import 'package:maven_digital_test/utils/constant.dart';
 
 class HomeController extends GetxController {
   final BookRepository _bookRepository = Get.find();
@@ -16,16 +16,12 @@ class HomeController extends GetxController {
   void onInit() {
     // TODO: implement onInit
     super.onInit();
-    // fetchAllBookInitialized();
   }
 
   // Fetch all data saat aplikasi dibuka
   Future<List<BookData>> fetchAllBookInitialized() async {
-    // isLoading.value = true;
     var booksResponse = await _bookRepository.getAll(
-        keywordsParameter: 'keyword', startIndex: 0);
-
-    print(booksResponse);
+        keywordsParameter: DEFAULT_KEYWORDS, startIndex: 0);
 
     // isLoading.value = false;
     totalBooksDataInQuery = booksResponse.totalItems;
@@ -36,7 +32,6 @@ class HomeController extends GetxController {
 
   // Fetch data setelah aplikasi dibuka
   Future<List<BookData>> fetchAllBooks(String keyword, int startIndex) async {
-    print("startIndex $startIndex");
     try {
       var booksResponse = await _bookRepository.getAll(
           keywordsParameter: keyword, startIndex: startIndex);
